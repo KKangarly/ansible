@@ -1,0 +1,27 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Update apt 
+    apt:
+      update_cache: yes 
+
+  - name: install apache2 package
+    apt: 
+      name: apache2
+      
+  - name: apache2 server enabled and running
+    service:
+        name: apache2
+        state: started
+        enabled: yes
+
+  - name: Add a new user 'devops'
+    user:
+        name: devops
+        groups: sudo
+        shell: /bin/bash
+        state: present
+        create_home: yes
