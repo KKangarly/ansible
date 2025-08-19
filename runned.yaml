@@ -9,7 +9,7 @@
     apt: 
       name: nginx
       state: present
-
+    ignore_errors: true    
 
   - name: copy nginx.conf from control node
     copy:
@@ -18,47 +18,55 @@
       owner: root
       group: root
       mode: '0644'
+    ignore_errors: true    
         
-  - name: Reload systemd daemon configuration
+  - name: systemc daeomon reload
     ansible.builtin.systemd:
       daemon_reload: true
+    ignore_errors: true    
 
 
   - name: Restart nginx 
     service: 
       name: nginx
       state: restarted
+    ignore_errors: true    
 
 
   - name: Download container 
-    package: 
-    name: docker
-    state: present
+    ansible.builtin.apt:  
+      name: docker
+      state: present
+    ignore_errors: true    
 
   - name: started docker
     service: 
-      name: docker
+      name: docker.io
       state: started
       enabled: true 
+    ignore_errors: true    
 
   - name: created index html file
     copy: 
       dest: /tmp/index.html
       content: "Salam.Bu ansible ile yaradilmis http serverdir!"
+    ignore_errors: true    
 
   - name: created container
     community.docker.docker_image: 
       name: nginx:latest
       ports: 
-        - "80:80"
+        - "80:90"
       volumes: 
         - "/tmp/index.html: /usr/share/nginx/html:ro"
       state: started
+    ignore_errors: true    
 
   - name: install haproxy
     apt:
       name: nginx
       state: present
+    ignore_errors: true    
 
   - name: cp haproxy config file
     copy: 
@@ -67,12 +75,15 @@
       owner: root
       group: root
       mode: '0644'
+    ignore_errors: true    
 
   - name: systemctl daemon-reload
     ansible.builtin.systemd:
       daemon_reload: true
+    ignore_errors: true    
 
   - name: restart haproxy
     service:
       name: haproxy
       state: restarted
+    ignore_errors: true    
