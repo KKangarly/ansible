@@ -19,9 +19,60 @@
       group: root
       mode: '0644'
         
+  - name: Reload systemd daemon configuration
+    ansible.builtin.systemd:
+      daemon_reload: true
+
 
   - name: Restart nginx 
     service: 
       name: nginx
       state: restarted
 
+
+  - name: Download container 
+    package: 
+    name: docker
+    state: present
+
+  - name: started docker
+    service: 
+      name: docker
+      state: started
+      enabled: true 
+
+  - name: created index html file
+    copy: 
+      dest: /tmp/index.html
+      content: "Salam.Bu ansible ile yaradilmis http serverdir!"
+
+  - name: created container
+    community.docker.docker_image: 
+      name: nginx:latest
+      ports: 
+        - "80:80"
+      volumes: 
+        - "/tmp/index.html: /usr/share/nginx/html:ro"
+      state: started
+
+  - name: install haproxy
+    apt:
+      name: nginx
+      state: present
+
+  - name: cp haproxy config file
+    copy: 
+      src: 
+      dest:
+      owner: 
+      group: 
+      mode: 
+
+  - name: systemctl daemon-reload
+    ansible.builtin.systemd:
+      daemon_reload: true
+
+  - name: restart haproxy
+    service:
+      name: haproxy
+      state: restarted
