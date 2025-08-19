@@ -8,24 +8,20 @@
   - name: install nginx
     apt: 
       name: nginx
-      state: latest
-      update_cache: yes
+      state: present
 
 
-  - name: 
-        
-
-
-  - name: Remove default nginx configuration
-    file:
-      path: /etc/nginx/sites-enabled/default
-      state: absent
-
-  - name: Add nginx configuration
-    copy: 
-      src: 
-      dest:
+  - name: copy nginx.conf from control node
+    copy:
+      src: /tmp/nginx.conf
+      dest: /etc/nginx/nginx.conf
       owner: root
       group: root
       mode: '0644'
+        
+
+  - name: Restart nginx 
+    service: 
+      name: nginx
+      state: restarted
 
