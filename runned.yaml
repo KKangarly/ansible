@@ -62,11 +62,11 @@
 
   - name: cp haproxy config file
     copy: 
-      src: 
-      dest:
-      owner: 
-      group: 
-      mode: 
+      src: /tmp/haproxy.cfg 
+      dest: /etc/haproxy/haproxy.cfg
+      owner: root
+      group: root
+      mode: '0644'
 
   - name: systemctl daemon-reload
     ansible.builtin.systemd:
