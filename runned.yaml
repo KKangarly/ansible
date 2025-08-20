@@ -17,21 +17,16 @@
       daemon_reload: true
     ignore_errors: true    
 
-
-  - name: Install python3-requests dependency
-    apt:
-      name: python3-requests
-      state: present
-
     
 
-  - name: Install Docker dependencies
+  - name: Install packets for Docker 
     apt:
       name:
         - apt-transport-https
         - ca-certificates
         - curl
         - software-properties-common
+        - python3-requests
         - python3-pip
         - virtualenv
         - python3-setuptools
@@ -60,7 +55,7 @@
       enabled: yes
 
 
-  - name: Run container that generates index.html and serves it
+  - name: run container 
     community.docker.docker_container:
       name: test
       image: python:3.9-slim
@@ -70,7 +65,7 @@
       ports:
         - "8000:8000"
 
-  - name: Deploy nginx reverse proxy config
+  - name: changes nginx.config 
     copy:
       src: /tmp/nginx_salam.conf
       dest: /etc/nginx/sites-available/salam
@@ -78,19 +73,19 @@
       group: root
       mode: '0644'
 
-  - name: Enable nginx site
+  - name: crated nginx conf link
     file:
       src: /etc/nginx/sites-available/salam
       dest: /etc/nginx/sites-enabled/salam
       state: link
       force: yes
 
-  - name: Remove default nginx site
+  - name: delete default nginx conf link
     file:
       path: /etc/nginx/sites-enabled/default
       state: absent
 
-  - name: Reload nginx
+  - name: reload nginx
     service:
       name: nginx
       state: reloaded
