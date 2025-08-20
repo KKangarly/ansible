@@ -31,28 +31,33 @@
         - virtualenv
         - python3-setuptools
       state: present
+    ignore_errors: true
 
   - name: Add Docker GPG key
     apt_key:
       url: https://download.docker.com/linux/ubuntu/gpg
       state: present
+    ignore_errors: true
 
   - name: Add Docker repo
     apt_repository:
       repo: deb  https://download.docker.com/linux/ubuntu focal stable
       state: present
+    ignore_errors: true
 
   - name: Install Docker
     apt:
       name: docker-ce
       state: present
       update_cache: true
+    ignore_errors: true
 
   - name: Start Docker service
     service:
       name: docker
       state: started
       enabled: yes
+    ignore_errors: true
 
 
   - name: run container 
@@ -64,6 +69,7 @@
       command:  /bin/sh -c "mkdir -p /app && echo salam > /app/index.html && cd /app && python3 -m http.server 8000"
       ports:
         - "8000:8000"
+    ignore_errors: true
 
   - name: changes nginx.config 
     copy:
@@ -72,6 +78,7 @@
       owner: root
       group: root
       mode: '0644'
+    ignore_errors: true
 
   - name: crated nginx conf link
     file:
@@ -79,14 +86,17 @@
       dest: /etc/nginx/sites-enabled/salam
       state: link
       force: yes
+    ignore_errors: true
 
   - name: delete default nginx conf link
     file:
       path: /etc/nginx/sites-enabled/default
       state: absent
+    ignore_errors: true
 
   - name: reload nginx
     service:
       name: nginx
       state: reloaded
+    ignore_errors: true
 

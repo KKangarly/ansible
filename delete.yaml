@@ -3,12 +3,6 @@
   become: true
   tasks:
 
-    - name: Reload nginx service (optional)
-      service:
-        name: nginx
-        state: reloaded
-      ignore_errors: true
-
     - name: Stop nginx service
       service:
         name: nginx
@@ -21,7 +15,7 @@
         enabled: no
       ignore_errors: true
 
-    - name: Purge nginx packages and config files
+    - name: Purge nginx config files
       apt:
         name: nginx*
         state: absent
@@ -29,13 +23,13 @@
         autoremove: yes
       ignore_errors: true
 
-    - name: Remove nginx config directory (if exists)
+    - name: delete nginx config directory
       file:
         path: /etc/nginx
         state: absent
       ignore_errors: true
 
-    - name: Stop docker service
+    - name: stop docker service
       service:
         name: docker
         state: stopped
@@ -45,14 +39,14 @@
       apt:
         name:
           - docker-ce
-          - docker-ce-cli
-          - containerd.io
+#          - docker-ce-cli
+#          - containerd.io
         state: absent
         purge: yes
         autoremove: yes
       ignore_errors: true
 
-    - name: Purge docker dependencies
+    - name: delete files for docker
       apt:
         name:
           - apt-transport-https
@@ -66,7 +60,7 @@
         autoremove: yes
       ignore_errors: true
 
-    - name: Remove docker config directory (if exists)
+    - name: delete docker config directory 
       file:
         path: /var/lib/docker
         state: absent
