@@ -11,14 +11,6 @@
       state: present
     ignore_errors: true    
 
-  - name: copy nginx.conf from control node
-    copy:
-      src: /tmp/nginx.conf
-      dest: /etc/nginx/nginx.conf
-      owner: root
-      group: root
-      mode: '0644'
-    ignore_errors: true    
         
   - name: systemc daeomon reload
     ansible.builtin.systemd:
@@ -26,64 +18,73 @@
     ignore_errors: true    
 
 
-  - name: Restart nginx 
-    service: 
-      name: nginx
-      state: restarted
-    ignore_errors: true    
-
-
-  - name: Download container 
-    ansible.builtin.apt:  
-      name: docker
-      state: present
-    ignore_errors: true    
-
-  - name: started docker
-    service: 
-      name: docker.io
-      state: started
-      enabled: true 
-    ignore_errors: true    
-
-  - name: created index html file
-    copy: 
-      dest: /tmp/index.html
-      content: "Salam.Bu ansible ile yaradilmis http serverdir!"
-    ignore_errors: true    
-
-  - name: created container
-    community.docker.docker_image: 
-      name: nginx:latest
-      ports: 
-        - "80:90"
-      volumes: 
-        - "/tmp/index.html: /usr/share/nginx/html:ro"
-      state: started
-    ignore_errors: true    
-
-  - name: install haproxy
+  - name: Install Docker dependencies
     apt:
-      name: nginx
+      name:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - python3-pip
+        - virtualenv
+        - python3-setuptools
       state: present
-    ignore_errors: true    
 
-  - name: cp haproxy config file
-    copy: 
-      src: /tmp/haproxy.cfg 
-      dest: /etc/haproxy/haproxy.cfg
+  - name: Add Docker GPG key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker repo
+    apt_repository:
+      repo: deb  https://download.docker.com/linux/ubuntu focal stable
+      state: present
+
+  - name: Install Docker
+    apt:
+      name: docker-ce
+      state: present
+      update_cache: true
+
+  - name: Start Docker service
+    service:
+      name: docker
+      state: started
+      enabled: yes
+
+
+  - name: Run container that generates index.html and serves it
+    community.docker.docker_container:
+      name: test
+      image: python:3.9-slim
+      state: started
+      restart_policy: always
+      command:  /bin/sh -c "mkdir -p /app && echo salam > /app/index.html && cd /app && python3 -m http.server 8000"
+      ports:
+        - "8000:8000"
+
+  - name: Deploy nginx reverse proxy config
+    copy:
+      src: /tmp/nginx_salam.conf
+      dest: /etc/nginx/sites-available/salam
       owner: root
       group: root
       mode: '0644'
-    ignore_errors: true    
 
-  - name: systemctl daemon-reload
-    ansible.builtin.systemd:
-      daemon_reload: true
-    ignore_errors: true    
+  - name: Enable nginx site
+    file:
+      src: /etc/nginx/sites-available/salam
+      dest: /etc/nginx/sites-enabled/salam
+      state: link
+      force: yes
 
-  - name: restart haproxy
+  - name: Remove default nginx site
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+
+  - name: Reload nginx
     service:
-      name: haproxy
-      state: restarted
-    ignore_errors: true    
+      name: nginx
+      state: reloaded
+
