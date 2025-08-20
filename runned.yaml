@@ -18,6 +18,13 @@
     ignore_errors: true    
 
 
+  - name: Install python3-requests dependency
+    apt:
+      name: python3-requests
+      state: present
+
+    
+
   - name: Install Docker dependencies
     apt:
       name:
