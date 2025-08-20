@@ -1,0 +1,74 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+  - name: delete container
+    community.docker.docker_container:
+      name: test
+      state: absent
+    ignore_errors: true
+
+  - name: delete nginx.conf
+    file:
+      path: /etc/nginx/sites-available/salam
+      state: absent
+    ignore_errors: true
+
+  - name: deelte nginx symlink
+    file:
+      path: /etc/nginx/sites-enabled/salam
+      state: absent
+    ignore_errors: true
+
+
+  - name: delete nginx
+    service:
+      name: nginx
+      state: reloaded
+    ignore_errors: true
+
+  - name: Stop nginx service
+    service:
+      name: nginx
+      state: stopped
+    ignore_errors: true
+
+  - name: delete nginx files
+    apt:
+      name: nginx
+      state: absent
+      purge: yes
+    ignore_errors: true
+
+  - name: Stop docker service
+    service:
+      name: docker
+      state: stopped
+    ignore_errors: true
+
+  - name: delete docker package
+    apt:
+      name:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+      state: absent
+      purge: yes
+    ignore_errors: true
+
+  - name: delete docker dependencies
+    apt:
+      name:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - python3-pip
+        - virtualenv
+        - python3-setuptools
+      state: absent
+      purge: yes
+    ignore_errors: true
+
+
