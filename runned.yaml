@@ -10,6 +10,19 @@
     # - docker container external port 
     # - docker container internal port (should be same with python http server port)
     # - python http server port (will be same with the punct before)
+  vars:
+    docker_name: "test"
+    docker_ext_port: 8000
+    docker_http_int_port: 8000
+    url_docker_gpg: "https://download.docker.com/linux/ubuntu/gpg"
+    url_docker_repo: "https://download.docker.com/linux/ubuntu"
+    restart_status: "always"
+    file_perm_uid: "root"
+    file_perm_gid: "root"
+    file_perm: 0644
+
+
+
 
   - name: install nginx
     apt: 
@@ -66,6 +79,14 @@
     ignore_errors: true
 
       # add copy taks to copy index.html to target servers 
+  - name: copy index.html
+    copy:
+      src: /tmp/index.html
+      dest: /tmp/index.html
+      owner: {{ file_perm_uid }} 
+      group: {{file_perm_gid  }}
+      mode: {{ file_perm }}
+    ignore_errors: true
 
       # add volume mode to container to use index.html that copied to targets 
   - name: run container 
@@ -77,6 +98,8 @@
       command:  /bin/sh -c "mkdir -p /app && echo salam > /app/index.html && cd /app && python3 -m http.server 8000"
       ports:
         - "8000:8000"
+      volumes: 
+        - "/tmp/index.html:/"
     ignore_errors: true
 
   - name: changes nginx.config 
