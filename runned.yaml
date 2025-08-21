@@ -3,13 +3,6 @@
 
 - hosts: all
   become: true
-  tasks:
-    # add variables. Make sure these variables are easily accessed by your tasks . It should be "general playbook variables"
-    # variables I need for this playbook : 
-    # - docker container name
-    # - docker container external port 
-    # - docker container internal port (should be same with python http server port)
-    # - python http server port (will be same with the punct before)
   vars:
     docker_name: "test"
     docker_ext_port: 8000
@@ -21,10 +14,15 @@
     file_perm_gid: "root"
     file_perm: 0644
 
+  tasks:
+    # add variables. Make sure these variables are easily accessed by your tasks . It should be "general playbook variables"
+    # variables I need for this playbook : 
+    # - docker container name
+    # - docker container external port 
+    # - docker container internal port (should be same with python http server port)
+    # - python http server port (will be same with the punct before)
 
-
-
-  - name: install nginx
+ - name: install nginx
     apt: 
       name: nginx
       state: present
@@ -54,13 +52,13 @@
 
   - name: Add Docker GPG key
     apt_key:
-      url: https://download.docker.com/linux/ubuntu/gpg # convert it to variable
+      url: {{ url_docker_gpg }} # convert it to variable
       state: present
     ignore_errors: true
 
   - name: Add Docker repo
     apt_repository:
-      repo: deb  https://download.docker.com/linux/ubuntu focal stable # convert it to variable
+      repo: deb  {{ url_docker_repo }} focal stable # convert it to variable
       state: present
     ignore_errors: true
 
@@ -94,12 +92,12 @@
       name: test
       image: python:3.9-slim
       state: started
-      restart_policy: always # convert it to variable 
-      command:  /bin/sh -c "mkdir -p /app && echo salam > /app/index.html && cd /app && python3 -m http.server 8000"
+      restart_policy:{{ restart_status }} # convert it to variable 
+      command:  /bin/sh -c "cd /srv && python3 -m http.server {{ docker_http_int_port }}"
       ports:
-        - "8000:8000"
+        - "{{ docker_ext_port }}:{{ docker_http_int_port }}"
       volumes: 
-        - "/tmp/index.html:/"
+        - "/tmp/index.html:/srv/index.html"
     ignore_errors: true
 
   - name: changes nginx.config 
@@ -107,9 +105,9 @@
       src: /tmp/nginx_salam.conf
       dest: /etc/nginx/sites-available/salam
       # ---- Convert these to variables 
-      owner: root
-      group: root
-      mode: '0644'
+      owner: {{ file_perm_uid }}
+      group: {{file_perm_gid  }}
+      mode: {{ file_perm }}
       # ----------------
     ignore_errors: true
 
